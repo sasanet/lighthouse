@@ -32,7 +32,7 @@ class CountModelsLoader implements ModelsLoader
          */
         $countAttributeName = Str::snake("{$relationName}_count");
 
-        $count = $model->getAttribute($countAttributeName);
+        $count = intval($model->getAttribute($countAttributeName));
         assert(is_int($count), 'avoid runtime check in production since the return type validates this anyway');
 
         return $count;
