@@ -40,7 +40,7 @@ abstract class DriverManager
      *
      * @return object the driver instance
      */
-    public function driver(?string $name = null): object
+    public function driver(string $name = null): object
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -108,7 +108,8 @@ abstract class DriverManager
             return $this->validateDriver($this->callCustomCreator($config));
         }
 
-        $driverMethod = 'create' . ucfirst($config['driver']) . 'Driver';
+        $upperDriver = ucfirst($config['driver']);
+        $driverMethod = "create{$upperDriver}Driver";
 
         if (method_exists($this, $driverMethod)) {
             return $this->validateDriver($this->{$driverMethod}($config));

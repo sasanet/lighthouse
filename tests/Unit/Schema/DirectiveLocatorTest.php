@@ -15,8 +15,7 @@ use Tests\TestCase;
 
 final class DirectiveLocatorTest extends TestCase
 {
-    /** @var \Nuwave\Lighthouse\Schema\DirectiveLocator */
-    protected $directiveLocator;
+    private DirectiveLocator $directiveLocator;
 
     protected function setUp(): void
     {
@@ -63,9 +62,7 @@ final class DirectiveLocatorTest extends TestCase
                 return /** @lang GraphQL */ 'foo';
             }
 
-            public function handleField(FieldValue $fieldValue): void
-            {
-            }
+            public function handleField(FieldValue $fieldValue): void {}
         };
 
         $this->directiveLocator->setResolved('foo', $directive::class);

@@ -78,7 +78,7 @@ class WhereConditionsHandler
         string $relation,
         string $operator,
         int $amount,
-        ?array $condition = null,
+        array $condition = null,
     ): QueryBuilder {
         return $model
             ->newQuery()
@@ -132,7 +132,7 @@ class WhereConditionsHandler
     protected function prefixConditionWithTableName(array $condition, Model $model): array
     {
         if (isset($condition['column'])) {
-            $condition['column'] = $model->getTable() . '.' . $condition['column'];
+            $condition['column'] = "{$model->getTable()}.{$condition['column']}";
         }
 
         return $condition;

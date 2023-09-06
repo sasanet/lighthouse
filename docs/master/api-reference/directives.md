@@ -666,6 +666,11 @@ directive @can(
   Mutually exclusive with `resolved` and `query`.
   """
   find: String
+
+  """
+  Should the query fail when the models of `find` were not found?
+  """
+  findOrFail: Boolean! = true
 ) repeatable on FIELD_DEFINITION
 
 """
@@ -720,7 +725,7 @@ directive @clearCache(
 ) repeatable on FIELD_DEFINITION
 
 """
-Options for the `id` argument on `@clearCache`.
+Options for the `idSource` argument of `@clearCache`.
 
 Exactly one of the fields must be given.
 """
@@ -1067,6 +1072,49 @@ type User {
 type Mutation {
   createUser(email: String!, foo: String @drop): User @create
 }
+```
+
+## @feature
+
+```graphql
+"""
+Include the annotated element in the schema depending on a Laravel Pennant feature.
+"""
+directive @feature(
+  """
+  The name of the feature to be checked (can be a string or class name).
+  """
+  name: String!
+
+  """
+  Specify what the state of the feature should be for the field to be included.
+  """
+  when: FeatureState! = ACTIVE
+) on FIELD_DEFINITION | OBJECT
+
+"""
+Options for the `when` argument of `@feature`.
+"""
+enum FeatureState {
+  """
+  Indicates an active feature.
+  """
+  ACTIVE
+
+  """
+  Indicates an inactive feature.
+  """
+  INACTIVE
+}
+```
+
+Requires the installation of [Laravel Pennant](https://laravel.com/docs/pennant)
+and manual registration of the service provider in `config/app.php`:
+
+```php
+'providers' => [
+    \Nuwave\Lighthouse\Pennant\PennantServiceProvider::class,
+],
 ```
 
 ## @field
@@ -2228,7 +2276,7 @@ A [@namespace](#namespace) directive defined on a field directive wins in case o
 
 ```graphql
 """
-Use the client given value to add an not-equal conditional to a database query.
+Use the client given value to add a not-equal conditional to a database query.
 """
 directive @neq(
   """
@@ -2413,7 +2461,7 @@ directive @orderBy(
 ) on ARGUMENT_DEFINITION | FIELD_DEFINITION
 
 """
-Options for the `direction` argument on `@orderBy`.
+Options for the `direction` argument of `@orderBy`.
 """
 enum OrderByDirection {
   """
@@ -2428,7 +2476,7 @@ enum OrderByDirection {
 }
 
 """
-Options for the `relations` argument on `@orderBy`.
+Options for the `relations` argument of `@orderBy`.
 """
 input OrderByRelation {
   """
@@ -2940,8 +2988,10 @@ directive @rules(
   This can either be a reference to [Laravel's built-in validation rules](https://laravel.com/docs/validation#available-validation-rules),
   or the fully qualified class name of a custom validation rule.
 
-  Rules that mutate the incoming arguments, such as `exclude_if`, are not supported
-  by Lighthouse. Use ArgTransformerDirectives or FieldMiddlewareDirectives instead.
+  Validation rules that mutate the given input values are _not_ supported:
+  - `exclude_if`
+  - `exclude_unless`
+  Use ArgTransformerDirectives or FieldMiddlewareDirectives instead.
   """
   apply: [String!]!
 
@@ -2993,6 +3043,11 @@ directive @rulesForArray(
   Specify the validation rules to apply to the field.
   This can either be a reference to any of Laravel's built-in validation rules: https://laravel.com/docs/validation#available-validation-rules,
   or the fully qualified class name of a custom validation rule.
+
+  Validation rules that mutate the given input values are _not_ supported:
+  - `exclude_if`
+  - `exclude_unless`
+  Use ArgTransformerDirectives or FieldMiddlewareDirectives instead.
   """
   apply: [String!]!
 
@@ -3072,11 +3127,12 @@ scalar DateTime
 Adds a scope to the query builder.
 
 The scope method will receive the client-given value of the argument as the second parameter.
+This also works with custom query builders, it simply calls its methods with the argument value.
 """
 directive @scope(
   """
-  The name of the scope.
-  Defaults to the name of the argument.
+  The name of the scope or method on the custom query builder.
+  Defaults to the name of the argument or input field.
   """
   name: String
 ) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
